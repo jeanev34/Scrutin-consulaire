@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Élections des CFE – Turquie 2026 – Calcul proportionnel</title>
+<style>
+/* ============================================================
+   BASE
+============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f6fa;color:#222;min-height:100vh}
+a{color:#002395}
+/* ============================================================
+   HEADER
+============================================================ */
+.app-header{background:linear-gradient(135deg,#002395 0%,#003cbf 60%,#ED2939 100%);color:#fff;padding:16px 28px;display:flex;align-items:center;gap:18px;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.drapeau{display:flex;width:36px;height:54px;border-radius:4px;overflow:hidden;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.drapeau div{flex:1}
+.drapeau .bl{background:#002395}.drapeau .wh{background:#fff}.drapeau .re{background:#ED2939}
+.app-header h1{font-size:1.25rem;font-weight:700;line-height:1.3}
+.app-header p{font-size:.85rem;opacity:.88;margin-top:3px}
+/* ============================================================
+   TABS
+============================================================ */
+.tabs{display:flex;background:#fff;border-bottom:2px solid #dde0ee;overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:0;z-index:50}
+.tab-btn{padding:13px 22px;border:none;background:none;cursor:pointer;font-size:.9rem;font-weight:600;color:#666;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;display:flex;align-items:center;gap:8px}
+.tab-btn:hover{color:#002395;background:#f0f4ff}
+.tab-btn.active{color:#002395;border-bottom-color:#002395;background:#f8faff}
+.tab-btn .nb{width:22px;height:22px;border-radius:50%;background:#e0e7ff;color:#002395;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+.tab-btn.active .nb{background:#002395;color:#fff}
+.tab-btn.locked{opacity:.4;cursor:not-allowed}
+/* ============================================================
+   LAYOUT
+============================================================ */
+.container{max-width:920px;margin:0 auto;padding:28px 18px}
+.tab-panel{display:none}.tab-panel.active{display:block}
+/* ============================================================
+   CARDS
+============================================================ */
+.card{background:#fff;border-radius:12px;padding:22px;margin-bottom:22px;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1px solid #e8eaf0}
+.card h2{font-size:1.05rem;color:#002395;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #e8eaf0;display:flex;align-items:center;gap:8px}
+.card h3{font-size:.95rem;color:#444;margin:14px 0 10px}
+/* ============================================================
+   FORMS
+============================================================ */
+.row{display:grid;gap:14px;margin-bottom:14px}
+.row2{grid-template-columns:1fr 1fr}
+.row3{grid-template-columns:1fr 1fr 1fr}
+.row1{grid-template-columns:1fr}
+@media(max-width:600px){.row2,.row3{grid-template-columns:1fr}}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:.82rem;font-weight:600;color:#555}
+.fg input,.fg select{padding:9px 11px;border:1.5px solid #cdd2e8;border-radius:8px;font-size:.93rem;outline:none;transition:border-color .2s}
+.fg input:focus,.fg select:focus{border-color:#002395;box-shadow:0 0 0 3px rgba(0,49,149,.1)}
+.fg input[readonly]{background:#f0f4ff;color:#002395;font-weight:700}
+.fg .hint{font-size:.75rem;color:#888}
+/* list config cards */
+.lcard{border:1.5px solid #cdd2e8;border-radius:10px;padding:14px;margin-bottom:10px;background:#f9faff;position:relative}
+.lcard.mine{border-color:#002395;background:#f0f4ff}
+.lcard.mine::before{content:'⭐ Votre liste';position:absolute;top:-10px;right:12px;background:#002395;color:#fff;font-size:.7rem;padding:2px 9px;border-radius:20px;font-weight:700}
+.lhdr{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+/* ============================================================
+   BUTTONS
+============================================================ */
+.btn{padding:9px 18px;border-radius:8px;font-size:.92rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:#002395;color:#fff}.btn-primary:hover{background:#001a70}
+.btn-secondary{background:#fff;color:#002395;border:1.5px solid #002395}.btn-secondary:hover{background:#f0f4ff}
+.btn-success{background:#0a7c42;color:#fff}.btn-success:hover{background:#085e32}
+.btn-danger{background:#ED2939;color:#fff}.btn-danger:hover{background:#c0202e}
+.btn-grey{background:#eee;color:#444;border:1px solid #ccc}.btn-grey:hover{background:#ddd}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+/* ============================================================
+   STATS GRID
+============================================================ */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+.sbox{background:#fff;border-radius:10px;padding:14px;text-align:center;border:1.5px solid #e8eaf0;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.sbox .v{font-size:1.7rem;font-weight:700;color:#002395;line-height:1}
+.sbox .l{font-size:.74rem;color:#666;margin-top:5px}
+.sbox.ac{background:#002395;border-color:#002395}.sbox.ac .v{color:#fff}.sbox.ac .l{color:rgba(255,255,255,.85)}
+.sbox.red{background:#fff0f0;border-color:#ffcdd2}.sbox.red .v{color:#c62828}
+.sbox.green{background:#f0fff4;border-color:#c8e6c9}.sbox.green .v{color:#2e7d32}
+/* ============================================================
+   RESULTS TABLE
+============================================================ */
+.rtable{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:.88rem}
+.rtable th{background:#002395;color:#fff;padding:9px 11px;text-align:left;font-weight:600}
+.rtable th.c,.rtable td.c{text-align:center}
+.rtable td{padding:9px 11px;border-bottom:1px solid #e8eaf0}
+.rtable tr:hover{background:#f8faff}
+.rtable tr.mrow{background:#f0f4ff;font-weight:700}
+.rtable tr.mrow:hover{background:#e5ecff}
+.rtable tr.tot{background:#f0f4ff;font-weight:700}
+/* bar */
+.bar-c{background:#e8eaf0;border-radius:4px;height:7px;margin-top:3px;min-width:60px}
+.bar-f{height:100%;border-radius:4px;transition:width .5s}
+/* seat icons */
+.si{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;margin:1px}
+.si-q{background:#002395;color:#fff}.si-r{background:#ED2939;color:#fff}
+/* ============================================================
+   STEP BOXES
+============================================================ */
+.sbox-step{background:#f8faff;border-left:4px solid #002395;border-radius:0 8px 8px 0;padding:14px 18px;margin-bottom:14px}
+.sbox-step h4{color:#002395;font-size:.92rem;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.sbadge{background:#002395;color:#fff;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0}
+.formula{background:#e8f0fe;border-radius:7px;padding:10px 14px;font-family:monospace;font-size:.92rem;color:#002395;margin:7px 0}
+.rhl{background:#fff3e0;border-left:4px solid #ff9800;padding:9px 12px;border-radius:0 6px 6px 0;font-weight:700;color:#e65100;margin-top:7px;font-size:.9rem}
+.sbox-step.green{border-left-color:#0a7c42}
+.sbox-step.green h4{color:#0a7c42}
+.sbadge.green{background:#0a7c42}
+/* ============================================================
+   ALERTS
+============================================================ */
+.alert{padding:11px 14px;border-radius:8px;margin-bottom:14px;display:flex;align-items:flex-start;gap:9px;font-size:.88rem}
+.aw{background:#fff8e1;border:1px solid #ffe082;color:#856404}
+.ae{background:#ffebee;border:1px solid #ffcdd2;color:#c62828}
+.as{background:#e8f5e9;border:1px solid #c8e6c9;color:#2e7d32}
+.ai{background:#e3f2fd;border:1px solid #90caf9;color:#1565c0}
+/* ============================================================
+   VOTE DISTRIBUTION
+============================================================ */
+.vote-dist-bars{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.vd-row{display:flex;align-items:center;gap:10px}
+.vd-name{width:220px;font-size:.85rem;font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vd-bar-wrap{flex:1;background:#e8eaf0;border-radius:6px;height:22px;position:relative}
+.vd-bar{height:100%;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:.78rem;color:#fff;font-weight:700;transition:width .6s;min-width:2px}
+.vd-val{width:80px;font-size:.83rem;color:#555}
+/* ============================================================
+   COLOR SWATCH
+============================================================ */
+.cs{width:14px;height:14px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:5px;border:1px solid rgba(0,0,0,.12)}
+/* winner badge */
+.wbadge{background:#ffd700;color:#000;font-weight:700;font-size:.75rem;padding:2px 7px;border-radius:20px;margin-left:5px}
+/* rank colors */
+.rk1{color:#FFD700;font-weight:700}.rk2{color:#C0C0C0;font-weight:700}.rk3{color:#CD7F32;font-weight:700}
+/* ============================================================
+   SECTION TITLE
+============================================================ */
+.sec-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#002395;border-bottom:2px solid #e0e5ff;margin-bottom:14px;padding-bottom:6px}
+/* ============================================================
+   LEGEND
+============================================================ */
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.78rem;color:#555;margin-top:8px}
+.legend span{display:flex;align-items:center;gap:5px}
+/* ============================================================
+   PV STYLES
+============================================================ */
+#pv-inner{font-family:'Times New Roman',serif;font-size:11pt;line-height:1.6;color:#000}
+/* ============================================================
+   PRINT
+============================================================ */
+@media print{
+  .no-print{display:none!important}
+  body{background:#fff}
+  .app-header,.tabs{display:none!important}
+  .container{max-width:100%;padding:0}
+  .tab-panel{display:block!important}
+  .tab-panel:not(#tab-pv){display:none!important}
+  .card{box-shadow:none;border:none;padding:0}
+  .actions{display:none!important}
+}
+/* ============================================================
+   MISC
+============================================================ */
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mb16{margin-bottom:16px}
+hr.div{border:none;border-top:1px solid #e8eaf0;margin:18px 0}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.75rem;font-weight:700}
+.tag-blue{background:#e0e7ff;color:#002395}
+.tag-red{background:#ffebee;color:#c62828}
+.tag-green{background:#e8f5e9;color:#2e7d32}
+.tag-orange{background:#fff3e0;color:#e65100}
+@media(max-width:600px){
+  .app-header h1{font-size:1rem}
+  .tab-btn{padding:11px 12px;font-size:.82rem}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .vd-name{width:120px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════ -->
+<header class="app-header no-print">
+  <div class="drapeau"><div class="bl"></div><div class="wh"></div><div class="re"></div></div>
+  <div>
+    <h1>Élections des Conseillers des Français de l'Étranger</h1>
+    <p>Turquie · 31 mai 2026 · Scrutin proportionnel au plus fort reste</p>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════
+     NAVIGATION TABS
+════════════════════════════════════════════════════════ -->
+<nav class="tabs no-print" id="mainTabs">
+  <button class="tab-btn active" onclick="showTab('config')">
+    <span class="nb">1</span> ⚙️ Configuration
+  </button>
+  <button class="tab-btn" id="tbtn-saisie" onclick="showTab('saisie')">
+    <span class="nb">2</span> 📝 Saisie des votes
+  </button>
+  <button class="tab-btn locked" id="tbtn-resultats" onclick="gotoResultats()">
+    <span class="nb">3</span> 📊 Résultats
+  </button>
+  <button class="tab-btn locked" id="tbtn-pv" onclick="gotoPV()">
+    <span class="nb">4</span> 📄 Procès-verbal
+  </button>
+</nav>
+
+<div class="container">
+
+<!-- ════════════════════════════════════════════════════════
+     ONGLET 1 – CONFIGURATION
+════════════════════════════════════════════════════════ -->
+<div class="tab-panel active" id="tab-config">
+
+  <div class="card">
+    <h2>⚙️ Paramètres de l'élection</h2>
+    <div class="row row3">
+      <div class="fg">
+        <label>Circonscription consulaire</label>
+        <input type="text" id="cfg-circ" value="Turquie">
+      </div>
+      <div class="fg">
+        <label>Date du scrutin</label>
+        <input type="date" id="cfg-date" value="2026-05-31">
+      </div>
+      <div class="fg">
+        <label>Sièges à pourvoir</label>
+        <input type="number" id="cfg-sieges" value="4" min="1" max="30">
+      </div>
+    </div>
+    <div class="row row2">
+      <div class="fg">
+        <label>Nombre de listes en compétition</label>
+        <select id="cfg-nb" onchange="rebuildLists()">
+          <option value="3">3 listes</option>
+          <option value="4" selected>4 listes</option>
+          <option value="5">5 listes</option>
+          <option value="6">6 listes</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Type de mandat électif</label>
+        <select id="cfg-type">
+          <option value="CFE" selected>Conseillers des Français de l'Étranger (CFE)</option>
+          <option value="Consulaire">Conseillers consulaires</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Listes en compétition</h2>
+    <p style="font-size:.85rem;color:#666;margin-bottom:14px;">
+      Renseignez le nom complet de chaque liste. Cliquez sur le cercle coloré pour changer la couleur de la liste.
+      Utilisez le bouton <strong>« Ma liste »</strong> pour identifier votre liste (elle sera mise en évidence partout).
+    </p>
+    <div id="cfg-lists"></div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="goToSaisie()">
+        Continuer → Saisie des votes
+      </button>
+      <button class="btn btn-grey" onclick="resetApp()">
+        🔄 Réinitialiser
+      </button>
+    </div>
+  </div>
+
+</div><!-- /tab-config -->
+
+<!-- ════════════════════════════════════════════════════════
+     ONGLET 2 – SAISIE DES DONNÉES
+════════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-saisie">
+
+  <div class="card">
+    <h2>👥 Données de participation</h2>
+    <div class="row row3">
+      <div class="fg">
+        <label>Inscrits sur la LEC</label>
+        <input type="number" id="s-inscrits" placeholder="ex : 2 500" min="0" oninput="autoCalc()">
+        <span class="hint">Liste Électorale Consulaire</span>
+      </div>
+      <div class="fg">
+        <label>Votants à l'urne</label>
+        <input type="number" id="s-urne" placeholder="ex : 180" min="0" oninput="autoCalc()">
+      </div>
+      <div class="fg">
+        <label>Votants via internet</label>
+        <input type="number" id="s-internet" placeholder="ex : 220" min="0" oninput="autoCalc()">
+      </div>
+    </div>
+    <div class="row row3">
+      <div class="fg">
+        <label>Total votants (calculé auto)</label>
+        <input type="number" id="s-total" readonly placeholder="Automatique">
+      </div>
+      <div class="fg">
+        <label>Bulletins blancs ou nuls</label>
+        <input type="number" id="s-blancs" placeholder="ex : 15" min="0" oninput="autoCalc()">
+      </div>
+      <div class="fg">
+        <label>Suffrages exprimés (calculé auto)</label>
+        <input type="number" id="s-exprimes" readonly placeholder="Automatique">
+      </div>
+    </div>
+    <!-- Live indicators -->
+    <div id="part-stats" style="display:none">
+      <hr class="div">
+      <div class="stats-grid" id="part-grid"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🗳️ Voix obtenues par liste</h2>
+    <p style="font-size:.85rem;color:#666;margin-bottom:14px;">
+      Saisissez le nombre de voix pour chaque liste. La somme doit correspondre aux suffrages exprimés.
+    </p>
+    <div id="saisie-lists"></div>
+    <div id="votes-valid" style="margin-top:12px;"></div>
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="showTab('config')">← Retour</button>
+      <button class="btn btn-primary" id="btn-calc" onclick="runCalc()" disabled>
+        📊 Calculer les résultats →
+      </button>
+    </div>
+  </div>
+
+</div><!-- /tab-saisie -->
+
+<!-- ════════════════════════════════════════════════════════
+     ONGLET 3 – RÉSULTATS
+════════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-resultats">
+  <div id="resultats-content"></div>
+  <div class="actions no-print">
+    <button class="btn btn-secondary" onclick="showTab('saisie')">← Modifier les données</button>
+    <button class="btn btn-primary" onclick="showTab('pv')">Générer le PV →</button>
+    <button class="btn btn-success" onclick="printResults()">🖨️ Imprimer les résultats</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     ONGLET 4 – PROCÈS-VERBAL
+════════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="tab-pv">
+
+  <div class="card no-print">
+    <h2>📄 Informations complémentaires pour le procès-verbal</h2>
+    <p style="font-size:.85rem;color:#666;margin-bottom:14px;">
+      Ces données complèteront automatiquement le PV officiel. Vérifiez chaque champ avant impression.
+    </p>
+    <div class="row row2">
+      <div class="fg">
+        <label>Président(e) du bureau de vote</label>
+        <input type="text" id="pv-president" placeholder="Nom, Prénom">
+      </div>
+      <div class="fg">
+        <label>Secrétaire du bureau</label>
+        <input type="text" id="pv-secretaire" placeholder="Nom, Prénom">
+      </div>
+    </div>
+    <div class="row row2">
+      <div class="fg">
+        <label>Assesseur(e) 1</label>
+        <input type="text" id="pv-ass1" placeholder="Nom, Prénom">
+      </div>
+      <div class="fg">
+        <label>Assesseur(e) 2</label>
+        <input type="text" id="pv-ass2" placeholder="Nom, Prénom">
+      </div>
+    </div>
+    <div class="row row2">
+      <div class="fg">
+        <label>Lieu de dépouillement</label>
+        <input type="text" id="pv-lieu" value="Ambassade / Consulat de France en Turquie – Ankara">
+      </div>
+      <div class="fg">
+        <label>Heure de clôture du scrutin</label>
+        <input type="time" id="pv-heure" value="18:00">
+      </div>
+    </div>
+    <div class="actions" style="margin-top:10px;">
+      <button class="btn btn-primary" onclick="buildPV()">🔄 Mettre à jour le procès-verbal</button>
+      <button class="btn btn-success" onclick="printPV()">🖨️ Imprimer le PV seul</button>
+      <button class="btn btn-success" onclick="printAll()">🖨️ Tout imprimer (résultats + PV)</button>
+      <button class="btn btn-secondary" onclick="showTab('resultats')">← Résultats</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="pv-content">
+      <div class="ai alert">ℹ️ Le procès-verbal apparaîtra ici après le calcul des résultats.</div>
+    </div>
+  </div>
+
+</div><!-- /tab-pv -->
+
+</div><!-- /container -->
+
+<!-- ════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════ -->
+<script>
+/* -------------------------------------------------------
+   CONSTANTES & ÉTAT
+------------------------------------------------------- */
+const COLORS = ['#002395','#ED2939','#0a7c42','#ff6f00','#6a1b9a','#0097a7','#795548','#37474f'];
+const DEFAULT_NAMES = [
+  'Français de Turquie citoyens et solidaires',
+  'Liste 2 (à compléter)',
+  'Liste 3 (à compléter)',
+  'Liste 4 (à compléter)',
+  'Liste 5 (à compléter)',
+  'Liste 6 (à compléter)'
+];
+
+let ST = {                // state
+  lists: [],              // [{name, color, isMyList}]
+  participation: {},
+  results: null,
+  computed: false
+};
+
+/* -------------------------------------------------------
+   INIT
+------------------------------------------------------- */
+(function init(){
+  buildListState(4);
+  renderConfigLists();
+})();
+
+function buildListState(nb){
+  const prev = ST.lists;
+  ST.lists = [];
+  for(let i=0;i<nb;i++){
+    ST.lists.push({
+      name: prev[i]?.name || DEFAULT_NAMES[i] || `Liste ${i+1}`,
+      color: prev[i]?.color || COLORS[i % COLORS.length],
+      isMyList: prev[i]?.isMyList || (i===0)
+    });
+  }
+}
+
+function rebuildLists(){
+  const nb = +document.getElementById('cfg-nb').value;
+  buildListState(nb);
+  renderConfigLists();
+  renderSaisieLists();
+}
+
+/* -------------------------------------------------------
+   RENDER – CONFIG LISTS
+------------------------------------------------------- */
+function renderConfigLists(){
+  const c = document.getElementById('cfg-lists');
+  c.innerHTML = '';
+  ST.lists.forEach((lst,i)=>{
+    const d = document.createElement('div');
+    d.className = 'lcard'+(lst.isMyList?' mine':'');
+    d.id = `lcard-${i}`;
+    d.innerHTML = `
+      <div class="lhdr">
+        <input type="color" value="${lst.color}"
+          style="width:34px;height:34px;border:none;cursor:pointer;border-radius:50%;padding:2px;flex-shrink:0;"
+          onchange="ST.lists[${i}].color=this.value; updateColorDisplay(${i});" title="Changer la couleur">
+        <input type="text" value="${lst.name}"
+          style="flex:1;padding:8px 11px;border:1.5px solid #cdd2e8;border-radius:8px;font-size:.93rem;"
+          oninput="ST.lists[${i}].name=this.value; syncSaisieNames();"
+          placeholder="Nom complet de la liste">
+        ${lst.isMyList
+          ? '<span class="tag tag-blue" style="flex-shrink:0;">⭐ Ma liste</span>'
+          : `<button class="btn btn-secondary" style="padding:5px 10px;font-size:.78rem;flex-shrink:0;" onclick="setMyList(${i})">Ma liste</button>`
+        }
+      </div>`;
+    c.appendChild(d);
+  });
+}
+
+function updateColorDisplay(i){
+  // color change already saved in ST via onchange
+  renderSaisieLists();
+}
+
+function setMyList(idx){
+  ST.lists.forEach((l,i)=>{l.isMyList=(i===idx);});
+  renderConfigLists();
+  renderSaisieLists();
+}
+
+/* -------------------------------------------------------
+   RENDER – SAISIE LISTS
+------------------------------------------------------- */
+function renderSaisieLists(){
+  const c = document.getElementById('saisie-lists');
+  if(!c) return;
+  c.innerHTML = '';
+  ST.lists.forEach((lst,i)=>{
+    const d = document.createElement('div');
+    d.className = 'lcard'+(lst.isMyList?' mine':'');
+    d.style.display = 'flex';
+    d.style.alignItems = 'center';
+    d.style.gap = '12px';
+    d.innerHTML = `
+      <span style="width:15px;height:15px;border-radius:50%;background:${lst.color};flex-shrink:0;border:1px solid rgba(0,0,0,.15);display:inline-block;"></span>
+      <span style="flex:1;font-size:.93rem;font-weight:${lst.isMyList?'700':'600'}">${lst.name}</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <label style="font-size:.82rem;font-weight:600;color:#555;">Voix :</label>
+        <input type="number" id="vl-${i}" min="0" placeholder="0"
+          style="width:110px;padding:8px 10px;border:1.5px solid #cdd2e8;border-radius:8px;font-size:1rem;"
+          oninput="checkVotesValid()">
+      </div>`;
+    c.appendChild(d);
+  });
+}
+
+function syncSaisieNames(){
+  ST.lists.forEach((lst,i)=>{
+    const el = document.querySelector(`#saisie-lists .lcard:nth-child(${i+1}) span:nth-child(2)`);
+    if(el) el.textContent = lst.name;
+  });
+}
+
+/* -------------------------------------------------------
+   AUTO-CALCULATIONS (PARTICIPATION)
+------------------------------------------------------- */
+function autoCalc(){
+  const urne = +document.getElementById('s-urne').value||0;
+  const net  = +document.getElementById('s-internet').value||0;
+  const total = urne+net;
+  document.getElementById('s-total').value = total||'';
+
+  const blancs = +document.getElementById('s-blancs').value||0;
+  const expr = Math.max(0, total-blancs);
+  document.getElementById('s-exprimes').value = total>0?expr:'';
+
+  const inscrits = +document.getElementById('s-inscrits').value||0;
+
+  // live stats
+  const statsDiv = document.getElementById('part-stats');
+  const grid = document.getElementById('part-grid');
+  if(inscrits>0 || total>0){
+    statsDiv.style.display='block';
+    grid.innerHTML = `
+      <div class="sbox ac"><div class="v">${inscrits.toLocaleString('fr-FR')}</div><div class="l">Inscrits LEC</div></div>
+      <div class="sbox"><div class="v">${total.toLocaleString('fr-FR')}</div><div class="l">Total votants<br><small>(${pc(total,inscrits)} des inscrits)</small></div></div>
+      <div class="sbox"><div class="v">${urne.toLocaleString('fr-FR')}</div><div class="l">Votants urne</div></div>
+      <div class="sbox"><div class="v">${net.toLocaleString('fr-FR')}</div><div class="l">Votants internet</div></div>
+      <div class="sbox red"><div class="v">${blancs.toLocaleString('fr-FR')}</div><div class="l">Blancs / nuls<br><small>(${pc(blancs,total)} des votants)</small></div></div>
+      <div class="sbox green"><div class="v">${expr.toLocaleString('fr-FR')}</div><div class="l">Suffrages exprimés<br><small>(${pc(expr,total)} des votants)</small></div></div>
+    `;
+  } else {
+    statsDiv.style.display='none';
+  }
+  checkVotesValid();
+}
+
+function pc(n,d,dec=2){
+  if(!d) return '0,00%';
+  return (n/d*100).toFixed(dec).replace('.',',')+'%';
+}
+
+/* -------------------------------------------------------
+   VOTES VALIDATION
+------------------------------------------------------- */
+function checkVotesValid(){
+  const expr = +document.getElementById('s-exprimes').value||0;
+  const btn  = document.getElementById('btn-calc');
+  const div  = document.getElementById('votes-valid');
+
+  let sum = 0;
+  ST.lists.forEach((_,i)=>{ sum += +document.getElementById(`vl-${i}`)?.value||0; });
+
+  if(expr===0){
+    div.innerHTML='<div class="alert ai">ℹ️ Saisissez d\'abord les données de participation.</div>';
+    btn.disabled=true; return;
+  }
+  if(sum===0){
+    div.innerHTML='<div class="alert ai">ℹ️ Saisissez les voix obtenues par chaque liste.</div>';
+    btn.disabled=true; return;
+  }
+  const diff = sum-expr;
+  if(diff!==0){
+    const sign = diff>0?'+':'';
+    div.innerHTML=`<div class="alert aw">⚠️ La somme des voix (${sum.toLocaleString('fr-FR')}) diffère des suffrages exprimés (${expr.toLocaleString('fr-FR')}). Écart : <strong>${sign}${diff}</strong>. Vérifiez vos données.</div>`;
+    btn.disabled=true;
+  } else {
+    div.innerHTML=`<div class="alert as">✅ La somme des voix (${sum.toLocaleString('fr-FR')}) correspond exactement aux suffrages exprimés. Vous pouvez calculer les résultats.</div>`;
+    btn.disabled=false;
+  }
+}
+
+/* -------------------------------------------------------
+   CALCUL PROPORTIONNEL – PLUS FORT RESTE
+------------------------------------------------------- */
+function proportionnel(lists, exprimes, sieges){
+  // étape 1 : quotient électoral
+  const Q = exprimes / sieges;
+
+  // étape 2 : répartition au quotient entier
+  lists.forEach(l=>{
+    l.ratio = l.votes / Q;
+    l.siegesQ = Math.floor(l.ratio);
+    l.reste   = l.votes - l.siegesQ * Q;
+    l.siegeR  = false;
+    l.rang    = null;
+  });
+
+  const attribues = lists.reduce((s,l)=>s+l.siegesQ,0);
+  let restant = sieges - attribues;
+
+  // étape 3/4 : classer par reste desc, départage voix desc
+  const tries = [...lists].sort((a,b)=>{
+    const d = b.reste - a.reste;
+    if(Math.abs(d)<1e-9) return b.votes - a.votes;
+    return d;
+  });
+
+  tries.forEach((l,i)=>{ l.rang = i+1; });
+  for(let i=0;i<restant;i++){
+    if(tries[i]) tries[i].siegeR = true;
+  }
+
+  lists.forEach(l=>{ l.total = l.siegesQ + (l.siegeR?1:0); });
+
+  return { Q, attribues, restant, tries };
+}
+
+/* -------------------------------------------------------
+   RUN CALC
+------------------------------------------------------- */
+function runCalc(){
+  // save config
+  ST.config = {
+    circ: document.getElementById('cfg-circ').value,
+    date: document.getElementById('cfg-date').value,
+    sieges: +document.getElementById('cfg-sieges').value,
+    type: document.getElementById('cfg-type').value
+  };
+
+  // save list names from config (in case user edited there)
+  document.querySelectorAll('#cfg-lists .lcard').forEach((card,i)=>{
+    const inp = card.querySelector('input[type=text]');
+    if(inp) ST.lists[i].name = inp.value;
+    const col = card.querySelector('input[type=color]');
+    if(col) ST.lists[i].color = col.value;
+  });
+
+  // participation
+  const p = {
+    inscrits: +document.getElementById('s-inscrits').value||0,
+    urne:     +document.getElementById('s-urne').value||0,
+    internet: +document.getElementById('s-internet').value||0,
+    total:    +document.getElementById('s-total').value||0,
+    blancs:   +document.getElementById('s-blancs').value||0,
+    exprimes: +document.getElementById('s-exprimes').value||0
+  };
+  ST.participation = p;
+
+  // votes
+  const lists = ST.lists.map((l,i)=>({
+    name:l.name, color:l.color, isMyList:l.isMyList,
+    votes: +document.getElementById(`vl-${i}`)?.value||0
+  }));
+
+  const {Q, attribues, restant, tries} = proportionnel(lists, p.exprimes, ST.config.sieges);
+  ST.results = { lists, Q, attribues, restant, tries, exprimes:p.exprimes, sieges:ST.config.sieges };
+  ST.computed = true;
+
+  // unlock tabs
+  document.getElementById('tbtn-resultats').classList.remove('locked');
+  document.getElementById('tbtn-pv').classList.remove('locked');
+
+  renderResults();
+  buildPV();
+  showTab('resultats');
+}
+
+/* -------------------------------------------------------
+   RENDER RESULTS
+------------------------------------------------------- */
+function renderResults(){
+  const { lists, Q, attribues, restant, tries } = ST.results;
+  const p = ST.participation;
+  const cfg = ST.config;
+  const dateStr = fmtDate(cfg.date);
+  const sortedVotes = [...lists].sort((a,b)=>b.votes-a.votes);
+
+  let h = '';
+
+  /* ---- Bloc participation ---- */
+  h += `<div class="card">
+    <h2>📊 Résultats — ${cfg.circ} · ${dateStr}</h2>
+    <div class="stats-grid">
+      <div class="sbox ac"><div class="v">${p.inscrits.toLocaleString('fr-FR')}</div><div class="l">Inscrits LEC</div></div>
+      <div class="sbox"><div class="v">${p.total.toLocaleString('fr-FR')}</div><div class="l">Total votants<br><small>${pc(p.total,p.inscrits)} des inscrits</small></div></div>
+      <div class="sbox"><div class="v">${p.urne.toLocaleString('fr-FR')}</div><div class="l">Votants urne</div></div>
+      <div class="sbox"><div class="v">${p.internet.toLocaleString('fr-FR')}</div><div class="l">Votants internet</div></div>
+      <div class="sbox red"><div class="v">${p.blancs.toLocaleString('fr-FR')}</div><div class="l">Blancs / nuls<br><small>${pc(p.blancs,p.total)} des votants</small></div></div>
+      <div class="sbox green"><div class="v">${p.exprimes.toLocaleString('fr-FR')}</div><div class="l">Suffrages exprimés<br><small>${pc(p.exprimes,p.total)} des votants</small></div></div>
+    </div>
+  </div>`;
+
+  /* ---- Tableau résultats par liste ---- */
+  h += `<div class="card">
+    <h2>🗳️ Résultats par liste</h2>
+    <div class="vote-dist-bars">`;
+  sortedVotes.forEach(l=>{
+    const pctE = p.exprimes>0?(l.votes/p.exprimes*100):0;
+    h += `<div class="vd-row">
+      <div class="vd-name" style="color:${l.color};">${l.name}</div>
+      <div class="vd-bar-wrap">
+        <div class="vd-bar" style="background:${l.color};width:${Math.max(pctE,0.5).toFixed(1)}%;">
+          ${pctE>=5?pctE.toFixed(1)+'%':''}
+        </div>
+      </div>
+      <div class="vd-val">${l.votes.toLocaleString('fr-FR')} voix</div>
+    </div>`;
+  });
+  h += `</div>
+
+  <table class="rtable">
+    <thead><tr>
+      <th>Liste</th>
+      <th class="c">Voix</th>
+      <th class="c">% / exprimés</th>
+      <th class="c">% / inscrits</th>
+      <th class="c">Sièges</th>
+    </tr></thead>
+    <tbody>`;
+
+  sortedVotes.forEach(l=>{
+    const pE = p.exprimes>0?(l.votes/p.exprimes*100).toFixed(2):0;
+    const pI = p.inscrits>0?(l.votes/p.inscrits*100).toFixed(2):0;
+    let sHtml='';
+    for(let i=0;i<l.siegesQ;i++) sHtml+=`<span class="si si-q" title="Siège par quotient">Q</span>`;
+    if(l.siegeR) sHtml+=`<span class="si si-r" title="Siège par plus fort reste">R</span>`;
+    if(!sHtml) sHtml=`<span style="color:#aaa;">—</span>`;
+
+    h += `<tr class="${l.isMyList?'mrow':''}">
+      <td><span class="cs" style="background:${l.color};"></span>${l.name}${l.isMyList?'<span class="wbadge">⭐ Ma liste</span>':''}</td>
+      <td class="c"><strong>${l.votes.toLocaleString('fr-FR')}</strong>
+        <div class="bar-c"><div class="bar-f" style="width:${pE}%;background:${l.color};"></div></div>
+      </td>
+      <td class="c">${pE}%</td>
+      <td class="c">${pI}%</td>
+      <td class="c">${sHtml} <strong style="margin-left:4px;">${l.total}</strong></td>
+    </tr>`;
+  });
+
+  h += `<tr class="tot">
+    <td>TOTAL</td>
+    <td class="c">${p.exprimes.toLocaleString('fr-FR')}</td>
+    <td class="c">100%</td>
+    <td class="c">—</td>
+    <td class="c"><strong>${cfg.sieges}</strong></td>
+  </tr></tbody></table>
+
+  <div class="legend">
+    <span><span class="si si-q">Q</span> Siège attribué au quotient</span>
+    <span><span class="si si-r">R</span> Siège attribué au plus fort reste</span>
+  </div>
+  </div>`;
+
+  /* ---- Explication pas-à-pas ---- */
+  h += `<div class="card">
+    <h2>📖 Explication détaillée du calcul — Scrutin proportionnel au plus fort reste</h2>
+    <div class="alert ai">ℹ️ Cette section explique chaque étape du calcul afin que vous puissiez vérifier et expliquer les résultats à tout moment.</div>
+
+    <!-- ÉTAPE 1 -->
+    <div class="sbox-step">
+      <h4><span class="sbadge">1</span> Calcul du quotient électoral</h4>
+      <p style="margin-bottom:8px;">Le <strong>quotient électoral</strong> représente le nombre de voix nécessaires pour obtenir <strong>un seul siège</strong>. C'est la clé de voûte du système proportionnel.</p>
+      <div class="formula">Quotient = Suffrages exprimés ÷ Nombre de sièges<br>
+        Quotient = ${p.exprimes.toLocaleString('fr-FR')} ÷ ${cfg.sieges} = <strong>${Q.toFixed(6)}</strong></div>
+      <div class="rhl">📌 Quotient électoral = <strong>${Q.toFixed(4)}</strong> — Il faut ${Q.toFixed(2)} voix pour obtenir un siège.</div>
+    </div>
+
+    <!-- ÉTAPE 2 -->
+    <div class="sbox-step">
+      <h4><span class="sbadge">2</span> Première répartition — sièges au quotient entier</h4>
+      <p style="margin-bottom:8px;">Pour chaque liste : on divise ses voix par le quotient, puis on ne garde que la <strong>partie entière</strong> (on ignore les décimales pour l'instant). C'est le nombre de sièges obtenus directement.</p>
+      <div class="formula">Sièges (étape 2) = PARTIE_ENTIÈRE (Voix ÷ Quotient)</div>
+      <table class="rtable" style="margin-top:12px;">
+        <thead><tr>
+          <th>Liste</th>
+          <th class="c">Voix</th>
+          <th class="c">÷ Quotient</th>
+          <th class="c">= Ratio</th>
+          <th class="c">Partie entière</th>
+          <th class="c">Sièges</th>
+        </tr></thead>
+        <tbody>`;
+
+  lists.forEach(l=>{
+    h += `<tr class="${l.isMyList?'mrow':''}">
+      <td><span class="cs" style="background:${l.color};"></span>${l.name}</td>
+      <td class="c">${l.votes.toLocaleString('fr-FR')}</td>
+      <td class="c">${l.votes.toLocaleString('fr-FR')} ÷ ${Q.toFixed(2)}</td>
+      <td class="c">${l.ratio.toFixed(4)}</td>
+      <td class="c"><strong>${l.siegesQ}</strong></td>
+      <td class="c">${l.siegesQ} siège${l.siegesQ>1?'s':''}</td>
+    </tr>`;
+  });
+
+  h += `<tr class="tot"><td colspan="4">Total sièges attribués (étape 2)</td>
+    <td class="c"><strong>${attribues}</strong></td>
+    <td class="c">${attribues} / ${cfg.sieges}</td></tr>
+    </tbody></table>
+    <div class="rhl">Après l'étape 2 : <strong>${attribues} siège${attribues>1?'s':''} attribué${attribues>1?'s':''}</strong> sur ${cfg.sieges}. Il reste <strong>${restant} siège${restant>1?'s':''}</strong> à distribuer.</div>
+    </div>`;
+
+  if(restant>0){
+    /* ÉTAPE 3 */
+    h += `<div class="sbox-step">
+      <h4><span class="sbadge">3</span> Calcul des restes</h4>
+      <p style="margin-bottom:8px;">Le <strong>reste</strong> représente les voix «&nbsp;inutilisées&nbsp;» après la première attribution. Plus le reste est grand, plus la liste a vocation à recevoir un siège supplémentaire.</p>
+      <div class="formula">Reste = Voix de la liste − (Sièges obtenus × Quotient)</div>
+      <table class="rtable" style="margin-top:12px;">
+        <thead><tr>
+          <th>Liste</th>
+          <th class="c">Voix</th>
+          <th class="c">Calcul</th>
+          <th class="c">= Reste</th>
+        </tr></thead>
+        <tbody>`;
+
+    lists.forEach(l=>{
+      h += `<tr class="${l.isMyList?'mrow':''}">
+        <td><span class="cs" style="background:${l.color};"></span>${l.name}</td>
+        <td class="c">${l.votes.toLocaleString('fr-FR')}</td>
+        <td class="c">${l.votes.toLocaleString('fr-FR')} − (${l.siegesQ} × ${Q.toFixed(4)})</td>
+        <td class="c"><strong>${l.reste.toFixed(4)}</strong></td>
+      </tr>`;
+    });
+    h += `</tbody></table></div>`;
+
+    /* ÉTAPE 4 */
+    h += `<div class="sbox-step">
+      <h4><span class="sbadge">4</span> Attribution des sièges restants au plus fort reste</h4>
+      <p style="margin-bottom:8px;">Les <strong>${restant} siège${restant>1?'s':'s'} restant${restant>1?'s':''}</strong> sont attribués aux listes ayant les <strong>plus forts restes</strong>, dans l'ordre décroissant. En cas d'égalité parfaite des restes, la liste ayant obtenu le plus de voix est prioritaire.</p>
+      <table class="rtable" style="margin-top:12px;">
+        <thead><tr>
+          <th class="c">Rang</th>
+          <th>Liste</th>
+          <th class="c">Reste</th>
+          <th class="c">Siège restant ?</th>
+        </tr></thead>
+        <tbody>`;
+
+    tries.forEach((l,i)=>{
+      const rkCls = i===0?'rk1':i===1?'rk2':i===2?'rk3':'';
+      h += `<tr class="${l.isMyList?'mrow':''}">
+        <td class="c ${rkCls}"><strong>${i+1}</strong></td>
+        <td><span class="cs" style="background:${l.color};"></span>${l.name}</td>
+        <td class="c"><strong>${l.reste.toFixed(4)}</strong></td>
+        <td class="c">${l.siegeR
+          ? '<span class="tag tag-green">✅ OUI — 1 siège</span>'
+          : '<span style="color:#aaa;">Non</span>'}</td>
+      </tr>`;
+    });
+    h += `</tbody></table></div>`;
+  }
+
+  /* RÉSULTAT FINAL */
+  h += `<div class="sbox-step green">
+    <h4><span class="sbadge green">✓</span> Résultat final — Attribution définitive des sièges</h4>
+    <table class="rtable" style="margin-top:12px;">
+      <thead><tr>
+        <th>Liste</th>
+        <th class="c">Voix</th>
+        <th class="c">%</th>
+        <th class="c">Sièges quotient</th>
+        <th class="c">Sièges reste</th>
+        <th class="c">Total sièges</th>
+      </tr></thead>
+      <tbody>`;
+
+  sortedVotes.forEach(l=>{
+    const pE = p.exprimes>0?(l.votes/p.exprimes*100).toFixed(2):0;
+    h += `<tr class="${l.isMyList?'mrow':''}">
+      <td><span class="cs" style="background:${l.color};"></span>${l.name}${l.isMyList?'<span class="wbadge">⭐ Ma liste</span>':''}</td>
+      <td class="c">${l.votes.toLocaleString('fr-FR')}</td>
+      <td class="c">${pE}%</td>
+      <td class="c">${l.siegesQ}</td>
+      <td class="c">${l.siegeR?1:0}</td>
+      <td class="c"><strong style="font-size:1.1rem;color:#002395;">${l.total}</strong></td>
+    </tr>`;
+  });
+
+  h += `<tr class="tot">
+    <td>TOTAL</td>
+    <td class="c">${p.exprimes.toLocaleString('fr-FR')}</td>
+    <td class="c">100%</td>
+    <td class="c">${attribues}</td>
+    <td class="c">${restant}</td>
+    <td class="c"><strong>${cfg.sieges}</strong></td>
+  </tr></tbody></table>
+  </div></div>`;
+
+  document.getElementById('resultats-content').innerHTML = h;
+}
+
+/* -------------------------------------------------------
+   BUILD PV
+------------------------------------------------------- */
+function buildPV(){
+  if(!ST.computed) return;
+  const { lists, Q, attribues, restant } = ST.results;
+  const p = ST.participation;
+  const cfg = ST.config;
+  const dateStr = fmtDate(cfg.date);
+  const sortedV = [...lists].sort((a,b)=>b.votes-a.votes);
+  const president  = v('pv-president') || '________________________';
+  const secretaire = v('pv-secretaire') || '________________________';
+  const ass1 = v('pv-ass1') || '________________________';
+  const ass2 = v('pv-ass2') || '________________________';
+  const lieu = v('pv-lieu') || 'Ambassade / Consulat de France en Turquie – Ankara';
+  const heure = v('pv-heure') || '18:00';
+
+  let pv = `<div id="pv-inner" style="font-family:'Times New Roman',serif;font-size:11pt;line-height:1.65;color:#000;">
+
+  <!-- EN-TÊTE OFFICIEL -->
+  <div style="text-align:center;border-bottom:3px solid #000;padding-bottom:16px;margin-bottom:22px;">
+    <p style="font-size:9pt;font-weight:bold;letter-spacing:2px;text-transform:uppercase;">REPUBLIQUE FRANÇAISE</p>
+    <p style="font-size:8pt;letter-spacing:1px;">LIBERTÉ – ÉGALITÉ – FRATERNITÉ</p>
+    <p style="font-size:8pt;margin-top:6px;">MINISTÈRE DE L'EUROPE ET DES AFFAIRES ÉTRANGÈRES</p>
+    <div style="margin:12px auto;max-width:90%;border-top:1px solid #999;border-bottom:1px solid #999;padding:8px 0;">
+      <p style="font-size:11pt;font-weight:bold;text-transform:uppercase;">
+        ÉLECTION DES ${cfg.type==='CFE'?'CONSEILLERS DES FRANÇAIS DE L\'ÉTRANGER':'CONSEILLERS CONSULAIRES'}
+      </p>
+      <p style="font-size:10pt;">CIRCONSCRIPTION CONSULAIRE : ${cfg.circ.toUpperCase()}</p>
+      <p style="font-size:10pt;">SCRUTIN DU : ${dateStr.toUpperCase()}</p>
+    </div>
+    <p style="font-size:14pt;font-weight:bold;text-transform:uppercase;margin-top:10px;">
+      PROCÈS-VERBAL DE DÉPOUILLEMENT<br>ET DE PROCLAMATION DES RÉSULTATS
+    </p>
+  </div>
+
+  <!-- I. BUREAU DE VOTE -->
+  <div style="margin-bottom:18px;">
+    <p style="font-weight:bold;text-transform:uppercase;border-bottom:1.5px solid #000;margin-bottom:10px;font-size:10pt;">
+      I. — COMPOSITION DU BUREAU DE VOTE
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-size:10pt;">
+      <tr><td style="padding:5px 8px;border:1px solid #000;width:38%;font-weight:bold;">Président(e) du bureau</td>
+          <td style="padding:5px 8px;border:1px solid #000;">${president}</td></tr>
+      <tr><td style="padding:5px 8px;border:1px solid #000;font-weight:bold;">Secrétaire</td>
+          <td style="padding:5px 8px;border:1px solid #000;">${secretaire}</td></tr>
+      <tr><td style="padding:5px 8px;border:1px solid #000;font-weight:bold;">Assesseur(e) 1</td>
+          <td style="padding:5px 8px;border:1px solid #000;">${ass1}</td></tr>
+      <tr><td style="padding:5px 8px;border:1px solid #000;font-weight:bold;">Assesseur(e) 2</td>
+          <td style="padding:5px 8px;border:1px solid #000;">${ass2}</td></tr>
+      <tr><td style="padding:5px 8px;border:1px solid #000;font-weight:bold;">Lieu de dépouillement</td>
+          <td style="padding:5px 8px;border:1px solid #000;">${lieu}</td></tr>
+      <tr><td style="padding:5px 8px;border:1px solid #000;font-weight:bold;">Heure de clôture</td>
+          <td style="padding:5px 8px;border:1px solid #000;">${heure}</td></tr>
+    </table>
+  </div>
+
+  <!-- II. PARTICIPATION -->
+  <div style="margin-bottom:18px;">
+    <p style="font-weight:bold;text-transform:uppercase;border-bottom:1.5px solid #000;margin-bottom:10px;font-size:10pt;">
+      II. — DONNÉES DE PARTICIPATION
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-size:10pt;">
+      <thead>
+        <tr style="background:#f0f0f0;">
+          <th style="padding:6px 9px;border:1px solid #000;text-align:left;">Rubrique</th>
+          <th style="padding:6px 9px;border:1px solid #000;text-align:center;">Nombre</th>
+          <th style="padding:6px 9px;border:1px solid #000;text-align:center;">Pourcentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:5px 9px;border:1px solid #000;font-weight:bold;">Électeurs inscrits sur la LEC</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${p.inscrits.toLocaleString('fr-FR')}</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">base de référence</td></tr>
+        <tr><td style="padding:5px 9px;border:1px solid #000;padding-left:20px;">dont : Votants à l'urne</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${p.urne.toLocaleString('fr-FR')}</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${pc(p.urne,p.inscrits)} des inscrits</td></tr>
+        <tr><td style="padding:5px 9px;border:1px solid #000;padding-left:20px;">dont : Votants par voie électronique (internet)</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${p.internet.toLocaleString('fr-FR')}</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${pc(p.internet,p.inscrits)} des inscrits</td></tr>
+        <tr style="font-weight:bold;background:#e8eaf0;">
+            <td style="padding:5px 9px;border:1px solid #000;">TOTAL VOTANTS (urne + internet)</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${p.total.toLocaleString('fr-FR')}</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${pc(p.total,p.inscrits)} des inscrits</td></tr>
+        <tr><td style="padding:5px 9px;border:1px solid #000;">Bulletins blancs et nuls</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${p.blancs.toLocaleString('fr-FR')}</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${pc(p.blancs,p.total)} des votants</td></tr>
+        <tr style="font-weight:bold;background:#e8f5e9;">
+            <td style="padding:5px 9px;border:1px solid #000;">SUFFRAGES EXPRIMÉS</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${p.exprimes.toLocaleString('fr-FR')}</td>
+            <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${pc(p.exprimes,p.total)} des votants</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- III. RÉSULTATS PAR LISTE -->
+  <div style="margin-bottom:18px;">
+    <p style="font-weight:bold;text-transform:uppercase;border-bottom:1.5px solid #000;margin-bottom:10px;font-size:10pt;">
+      III. — RÉSULTATS PAR LISTE
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-size:10pt;">
+      <thead>
+        <tr style="background:#f0f0f0;">
+          <th style="padding:6px 8px;border:1px solid #000;text-align:left;">Dénomination de la liste</th>
+          <th style="padding:6px 8px;border:1px solid #000;text-align:center;">Voix obtenues</th>
+          <th style="padding:6px 8px;border:1px solid #000;text-align:center;">% / exprimés</th>
+          <th style="padding:6px 8px;border:1px solid #000;text-align:center;">% / inscrits</th>
+          <th style="padding:6px 8px;border:1px solid #000;text-align:center;">Sièges obtenus</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  sortedV.forEach(l=>{
+    const pE = p.exprimes>0?(l.votes/p.exprimes*100).toFixed(2):0;
+    const pI = p.inscrits>0?(l.votes/p.inscrits*100).toFixed(2):0;
+    pv += `<tr ${l.isMyList?'style="font-weight:bold;"':''}>
+      <td style="padding:5px 8px;border:1px solid #000;">${l.name}</td>
+      <td style="padding:5px 8px;border:1px solid #000;text-align:center;">${l.votes.toLocaleString('fr-FR')}</td>
+      <td style="padding:5px 8px;border:1px solid #000;text-align:center;">${pE} %</td>
+      <td style="padding:5px 8px;border:1px solid #000;text-align:center;">${pI} %</td>
+      <td style="padding:5px 8px;border:1px solid #000;text-align:center;font-weight:bold;">${l.total}</td>
+    </tr>`;
+  });
+
+  pv += `<tr style="font-weight:bold;background:#f0f0f0;">
+    <td style="padding:5px 8px;border:1px solid #000;">TOTAL</td>
+    <td style="padding:5px 8px;border:1px solid #000;text-align:center;">${p.exprimes.toLocaleString('fr-FR')}</td>
+    <td style="padding:5px 8px;border:1px solid #000;text-align:center;">100,00 %</td>
+    <td style="padding:5px 8px;border:1px solid #000;text-align:center;">—</td>
+    <td style="padding:5px 8px;border:1px solid #000;text-align:center;">${cfg.sieges}</td>
+  </tr></tbody></table>
+  </div>
+
+  <!-- IV. CALCUL PROPORTIONNEL -->
+  <div style="margin-bottom:18px;">
+    <p style="font-weight:bold;text-transform:uppercase;border-bottom:1.5px solid #000;margin-bottom:10px;font-size:10pt;">
+      IV. — RÉCAPITULATIF DU CALCUL PROPORTIONNEL AU PLUS FORT RESTE
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-size:10pt;">
+      <tr><td style="padding:5px 9px;border:1px solid #000;width:55%;font-weight:bold;">Sièges à pourvoir</td>
+          <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${cfg.sieges}</td></tr>
+      <tr><td style="padding:5px 9px;border:1px solid #000;font-weight:bold;">Suffrages exprimés</td>
+          <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${p.exprimes.toLocaleString('fr-FR')}</td></tr>
+      <tr><td style="padding:5px 9px;border:1px solid #000;font-weight:bold;">Quotient électoral (suffrages exprimés ÷ sièges)</td>
+          <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${Q.toFixed(4)}</td></tr>
+      <tr><td style="padding:5px 9px;border:1px solid #000;font-weight:bold;">Sièges attribués au quotient entier (1ère répartition)</td>
+          <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${attribues}</td></tr>
+      <tr><td style="padding:5px 9px;border:1px solid #000;font-weight:bold;">Sièges restants attribués au plus fort reste (2ème répartition)</td>
+          <td style="padding:5px 9px;border:1px solid #000;text-align:center;">${restant}</td></tr>
+    </table>
+  </div>
+
+  <!-- V. CONSEILLERS ÉLUS -->
+  <div style="margin-bottom:18px;">
+    <p style="font-weight:bold;text-transform:uppercase;border-bottom:1.5px solid #000;margin-bottom:10px;font-size:10pt;">
+      V. — CONSEILLERS ÉLUS
+    </p>`;
+
+  sortedV.filter(l=>l.total>0).forEach(l=>{
+    pv += `<p style="font-size:10pt;font-weight:bold;margin-bottom:4px;">
+      Liste « ${l.name} » — ${l.total} siège${l.total>1?'s':''} :
+    </p><ul style="font-size:10pt;margin-left:22px;margin-bottom:10px;list-style-type:decimal;">`;
+    for(let s=1;s<=l.total;s++){
+      pv += `<li style="margin-bottom:3px;">Candidat(e) élu(e) n°${s} : <span style="border-bottom:1px solid #000;display:inline-block;min-width:200px;">&nbsp;</span></li>`;
+    }
+    pv += `</ul>`;
+  });
+
+  pv += `</div>
+
+  <!-- VI. ATTESTATION -->
+  <div style="margin-bottom:24px;">
+    <p style="font-weight:bold;text-transform:uppercase;border-bottom:1.5px solid #000;margin-bottom:10px;font-size:10pt;">
+      VI. — ATTESTATION DES MEMBRES DU BUREAU
+    </p>
+    <p style="font-size:10pt;">Les membres du bureau de vote soussignés certifient l'exactitude et la sincérité des résultats consignés dans le présent procès-verbal, établi à ${lieu}, le <strong>${dateStr}</strong>.</p>
+    <p style="font-size:10pt;margin-top:8px;">Ce procès-verbal a été établi en double exemplaire : un exemplaire sera transmis au Ministère de l'Europe et des Affaires étrangères, l'autre sera conservé au poste consulaire.</p>
+  </div>
+
+  <!-- SIGNATURES -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:24px;">
+    <div style="text-align:center;">
+      <p style="font-size:10pt;margin-bottom:50px;">Le/La Président(e) du bureau de vote</p>
+      <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt;">${president}</div>
+    </div>
+    <div style="text-align:center;">
+      <p style="font-size:10pt;margin-bottom:50px;">Le/La Secrétaire du bureau de vote</p>
+      <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt;">${secretaire}</div>
+    </div>
+    <div style="text-align:center;">
+      <p style="font-size:10pt;margin-bottom:50px;">Assesseur(e) 1</p>
+      <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt;">${ass1}</div>
+    </div>
+    <div style="text-align:center;">
+      <p style="font-size:10pt;margin-bottom:50px;">Assesseur(e) 2</p>
+      <div style="border-top:1px solid #000;padding-top:6px;font-size:10pt;">${ass2}</div>
+    </div>
+  </div>
+
+  <hr style="margin:28px 0;border:none;border-top:1px solid #ccc;">
+  <p style="font-size:8pt;color:#666;text-align:center;">
+    Document généré automatiquement le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}
+    par l'application de calcul des résultats électoraux — Élections consulaires ${cfg.circ} 2026
+  </p>
+
+  </div>`; // close pv-inner
+
+  document.getElementById('pv-content').innerHTML = pv;
+}
+
+/* -------------------------------------------------------
+   NAVIGATION
+------------------------------------------------------- */
+function showTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  const panel = document.getElementById('tab-'+name);
+  if(panel) panel.classList.add('active');
+  const btn = document.querySelector(`[onclick="showTab('${name}')"]`);
+  if(btn) btn.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function gotoResultats(){
+  if(ST.computed) showTab('resultats');
+}
+function gotoPV(){
+  if(ST.computed) showTab('pv');
+}
+
+function goToSaisie(){
+  // sync list state from config UI
+  document.querySelectorAll('#cfg-lists .lcard').forEach((card,i)=>{
+    const inp = card.querySelector('input[type=text]');
+    if(inp) ST.lists[i].name = inp.value;
+    const col = card.querySelector('input[type=color]');
+    if(col) ST.lists[i].color = col.value;
+  });
+  renderSaisieLists();
+  document.getElementById('tbtn-saisie').classList.remove('locked');
+  showTab('saisie');
+}
+
+/* -------------------------------------------------------
+   PRINT
+------------------------------------------------------- */
+function printResults(){
+  const win = window.open('','_blank');
+  const content = document.getElementById('resultats-content').innerHTML;
+  const cfg = ST.config;
+  win.document.write(`<!DOCTYPE html><html lang="fr"><head>
+    <meta charset="UTF-8">
+    <title>Résultats — Élections consulaires ${cfg.circ} 2026</title>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:Arial,sans-serif;font-size:11pt;color:#000;padding:20px}
+      h2{color:#002395;font-size:13pt;border-bottom:2px solid #002395;padding-bottom:6px;margin:16px 0 10px;display:flex;align-items:center;gap:8px}
+      h4{font-size:11pt;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+      table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10pt}
+      th{background:#002395;color:#fff;padding:8px;text-align:left}
+      th.c,td.c{text-align:center}
+      td{padding:6px 8px;border-bottom:1px solid #ddd}
+      tr.mrow{background:#f0f4ff;font-weight:700}
+      tr.tot{background:#f0f4ff;font-weight:700}
+      .sbox-step{border-left:4px solid #002395;padding:10px 14px;margin-bottom:12px;background:#f8faff}
+      .sbox-step.green{border-left-color:#0a7c42}
+      .formula{background:#e8f0fe;padding:9px;font-family:monospace;margin:6px 0;font-size:10pt}
+      .rhl{background:#fff3e0;border-left:4px solid #ff9800;padding:8px;margin-top:7px;font-weight:bold;font-size:10pt}
+      .sbadge{background:#002395;color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700}
+      .sbadge.green{background:#0a7c42}
+      .alert{padding:10px 13px;border-radius:6px;margin-bottom:12px;font-size:10pt}
+      .ai{background:#e3f2fd;border:1px solid #90caf9}
+      .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+      .sbox{border:1px solid #ddd;padding:10px;text-align:center;border-radius:6px}
+      .sbox.ac{background:#002395;color:#fff;border-color:#002395}
+      .sbox.red{background:#fff0f0;border-color:#ffcdd2}
+      .sbox.green{background:#f0fff4;border-color:#c8e6c9}
+      .sbox .v{font-size:1.4rem;font-weight:700;color:#002395}
+      .sbox.ac .v{color:#fff}
+      .sbox.red .v{color:#c62828}
+      .sbox.green .v{color:#2e7d32}
+      .sbox .l{font-size:.72rem;color:#666;margin-top:4px}
+      .sbox.ac .l{color:rgba(255,255,255,.85)}
+      .cs{width:12px;height:12px;border-radius:2px;display:inline-block;vertical-align:middle;margin-right:4px}
+      .si{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;margin:1px}
+      .si-q{background:#002395;color:#fff}.si-r{background:#ED2939;color:#fff}
+      .wbadge{background:#ffd700;color:#000;font-size:.72rem;padding:1px 6px;border-radius:20px;margin-left:4px}
+      .rk1{color:#FFD700;font-weight:700}.rk2{color:#C0C0C0;font-weight:700}.rk3{color:#CD7F32;font-weight:700}
+      .tag-green{background:#e8f5e9;color:#2e7d32;padding:2px 7px;border-radius:20px;font-size:.75rem;font-weight:700}
+      .vd-bar-wrap,.vd-name,.vd-bar,.vd-val,.vote-dist-bars{display:none}
+      .bar-c,.bar-f,.legend{display:none}
+      h1{color:#002395;text-align:center;border-bottom:2px solid #002395;padding-bottom:10px;margin-bottom:18px}
+    </style>
+  </head><body>
+    <h1>Résultats — Élections consulaires ${cfg.circ} · ${fmtDate(cfg.date)}</h1>
+    ${content}
+  </body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),400);
+}
+
+function printPV(){
+  if(!ST.computed){alert('Veuillez d\'abord calculer les résultats.');return;}
+  buildPV();
+  const win = window.open('','_blank');
+  const content = document.getElementById('pv-content').innerHTML;
+  const cfg = ST.config;
+  win.document.write(`<!DOCTYPE html><html lang="fr"><head>
+    <meta charset="UTF-8">
+    <title>Procès-verbal — Élections consulaires ${cfg.circ} 2026</title>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'Times New Roman',serif;font-size:11pt;color:#000;padding:20mm 18mm}
+      @media print{body{padding:10mm 12mm}}
+    </style>
+  </head><body>${content}</body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),400);
+}
+
+function printAll(){
+  if(!ST.computed){alert('Veuillez d\'abord calculer les résultats.');return;}
+  buildPV();
+  const win = window.open('','_blank');
+  const results = document.getElementById('resultats-content').innerHTML;
+  const pv = document.getElementById('pv-content').innerHTML;
+  const cfg = ST.config;
+  win.document.write(`<!DOCTYPE html><html lang="fr"><head>
+    <meta charset="UTF-8">
+    <title>Élections consulaires ${cfg.circ} 2026 — Résultats complets</title>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:Arial,sans-serif;font-size:11pt;color:#000;padding:18px}
+      h2{color:#002395;font-size:13pt;border-bottom:2px solid #002395;padding-bottom:6px;margin:14px 0 10px;display:flex;align-items:center;gap:8px}
+      h4{font-size:11pt;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+      table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10pt}
+      th{background:#002395;color:#fff;padding:8px;text-align:left}
+      th.c,td.c{text-align:center}
+      td{padding:6px 8px;border-bottom:1px solid #ddd}
+      tr.mrow{background:#f0f4ff;font-weight:700}
+      tr.tot{background:#f0f4ff;font-weight:700}
+      .sbox-step{border-left:4px solid #002395;padding:10px 14px;margin-bottom:12px;background:#f8faff}
+      .sbox-step.green{border-left-color:#0a7c42}
+      .formula{background:#e8f0fe;padding:9px;font-family:monospace;margin:6px 0}
+      .rhl{background:#fff3e0;border-left:4px solid #ff9800;padding:8px;margin-top:7px;font-weight:bold}
+      .sbadge{background:#002395;color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700}
+      .sbadge.green{background:#0a7c42}
+      .alert{padding:10px;border-radius:6px;margin-bottom:12px}
+      .ai{background:#e3f2fd;border:1px solid #90caf9}
+      .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+      .sbox{border:1px solid #ddd;padding:10px;text-align:center;border-radius:6px}
+      .sbox.ac{background:#002395;color:#fff;border-color:#002395}
+      .sbox.red{background:#fff0f0;border-color:#ffcdd2}
+      .sbox.green{background:#f0fff4;border-color:#c8e6c9}
+      .sbox .v{font-size:1.3rem;font-weight:700;color:#002395}
+      .sbox.ac .v,.sbox.ac .l{color:#fff}
+      .sbox.red .v{color:#c62828}
+      .sbox.green .v{color:#2e7d32}
+      .sbox .l{font-size:.7rem;color:#666;margin-top:3px}
+      .cs{width:12px;height:12px;border-radius:2px;display:inline-block;vertical-align:middle;margin-right:4px}
+      .si{width:17px;height:17px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;margin:1px}
+      .si-q{background:#002395;color:#fff}.si-r{background:#ED2939;color:#fff}
+      .wbadge{background:#ffd700;color:#000;font-size:.7rem;padding:1px 5px;border-radius:20px;margin-left:3px}
+      .rk1{color:#B8860B;font-weight:700}.rk2{color:#777;font-weight:700}.rk3{color:#8B4513;font-weight:700}
+      .tag-green{background:#e8f5e9;color:#2e7d32;padding:2px 6px;border-radius:20px;font-size:.73rem;font-weight:700}
+      .vd-bar-wrap,.vd-name,.vd-bar,.vd-val,.vote-dist-bars,.bar-c,.bar-f,.legend{display:none}
+      .page-break{page-break-before:always;margin-top:30px}
+      h1{color:#002395;text-align:center;border-bottom:2px solid #002395;padding-bottom:10px;margin-bottom:18px}
+      #pv-inner{font-family:'Times New Roman',serif}
+    </style>
+  </head><body>
+    <h1>Résultats — Élections consulaires ${cfg.circ} · ${fmtDate(cfg.date)}</h1>
+    ${results}
+    <div class="page-break"></div>
+    ${pv}
+  </body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(),500);
+}
+
+/* -------------------------------------------------------
+   RESET
+------------------------------------------------------- */
+function resetApp(){
+  if(!confirm('Voulez-vous vraiment réinitialiser toute l\'application ? Toutes les données saisies seront perdues.')) return;
+  location.reload();
+}
+
+/* -------------------------------------------------------
+   UTILITIES
+------------------------------------------------------- */
+function v(id){ return document.getElementById(id)?.value||''; }
+
+function fmtDate(ds){
+  if(!ds) return '';
+  try{
+    const d = new Date(ds+'T12:00:00');
+    return d.toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  } catch(e){ return ds; }
+}
+</script>
+</body>
+</html>
